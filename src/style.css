@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom CSS Variables */
+:root {
+  /* Primary Colors */
+  --vdb-primary-color: #667eea;
+  --vdb-primary-hover: #5568d3;
+  --vdb-primary-active: #4c5fd1;
+
+  /* Border & Divider */
+  --vdb-border-color: #e2e8f0;
+  --vdb-border-color-light: #f1f5f9;
+  --vdb-border-radius: 8px;
+  --vdb-border-radius-sm: 4px;
+
+  /* Background Colors */
+  --vdb-bg-base: #ffffff;
+  --vdb-bg-secondary: #f8fafc;
+  --vdb-bg-hover: #f7fafc;
+  --vdb-bg-selected: #edf2f7;
+  --vdb-bg-active: #e2e8f0;
+
+  /* Text Colors */
+  --vdb-text-primary: #1a202c;
+  --vdb-text-secondary: #4a5568;
+  --vdb-text-tertiary: #718096;
+  --vdb-text-disabled: #a0aec0;
+
+  /* Layout Dimensions */
+  --vdb-header-height: 64px;
+  --vdb-footer-height: 60px;
+  --vdb-panel-width: 280px;
+  --vdb-resizer-width: 4px;
+
+  /* Spacing */
+  --vdb-spacing-xs: 4px;
+  --vdb-spacing-sm: 8px;
+  --vdb-spacing-md: 16px;
+  --vdb-spacing-lg: 24px;
+  --vdb-spacing-xl: 32px;
+
+  /* Shadows */
+  --vdb-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --vdb-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --vdb-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+  /* Transitions */
+  --vdb-transition-fast: 150ms;
+  --vdb-transition-base: 250ms;
+  --vdb-transition-slow: 350ms;
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--vdb-text-primary);
+  background-color: var(--vdb-bg-base);
+}
