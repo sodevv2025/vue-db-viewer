@@ -1,44 +1,29 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
+import { useMasterStore } from '../../stores/useMasterStore'
 import type { MasterConfig } from '../../types'
 
 /**
  * VDBMasterTable - 마스터 테이블 컴포넌트
  *
  * Element Plus el-table을 사용하여 데이터를 렌더링하고 행 선택 기능을 제공합니다.
+ * Pinia store를 사용하여 상태를 관리합니다.
  *
  * @example
- * <VDBMasterTable
- *   :config="masterConfig"
- *   :data="tableData"
- *   @row-select="handleRowSelect"
- * />
+ * <VDBMasterTable :config="masterConfig" />
  */
 
 interface Props {
   /** 마스터 테이블 설정 */
   config: MasterConfig
-  /** 테이블 데이터 (배열) */
-  data?: any[]
-  /** 로딩 상태 */
-  loading?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  data: () => [],
-  loading: false,
-})
+const props = defineProps<Props>()
 
-// Emits
-const emit = defineEmits<{
-  /** 행 선택 이벤트 */
-  'row-select': [payload: { row: any; index: number }]
-  /** 정렬 변경 이벤트 */
-  'sort-change': [payload: { column: string; direction: 'asc' | 'desc' | null }]
-}>()
+// Store
+const masterStore = useMasterStore()
 
 // State
-const selectedRow = ref<any>(null)
 const tableRef = ref()
 
 // Computed
@@ -48,9 +33,8 @@ const isSingleSelection = computed(() => props.config.selectionMode === 'single'
 const handleRowClick = (row: any, column: any, event: Event) => {
   if (!isSingleSelection.value) return
 
-  selectedRow.value = row
-  const index = props.data.findIndex((item) => item[props.config.rowKey] === row[props.config.rowKey])
-  emit('row-select', { row, index })
+  const index = masterStore.sortedData.findIndex((item: any) => item[props.config.rowKey] === row[props.config.rowKey])
+  masterStore.selectRow(row, index)
 }
 
 const handleSelectionChange = (selection: any[]) => {
@@ -59,10 +43,10 @@ const handleSelectionChange = (selection: any[]) => {
   // Multiple selection
   if (selection.length > 0) {
     const lastSelected = selection[selection.length - 1]
-    const index = props.data.findIndex(
-      (item) => item[props.config.rowKey] === lastSelected[props.config.rowKey]
+    const index = masterStore.sortedData.findIndex(
+      (item: any) => item[props.config.rowKey] === lastSelected[props.config.rowKey]
     )
-    emit('row-select', { row: lastSelected, index })
+    masterStore.selectRow(lastSelected, index)
   }
 }
 
@@ -71,13 +55,13 @@ const handleSortChange = ({ prop, order }: { prop: string; order: string | null 
   if (order === 'ascending') direction = 'asc'
   else if (order === 'descending') direction = 'desc'
 
-  emit('sort-change', { column: prop, direction })
+  masterStore.setSort(prop, direction)
 }
 
 // Row class for highlighting selected row
 const tableRowClassName = ({ row }: { row: any }) => {
-  if (isSingleSelection.value && selectedRow.value) {
-    return row[props.config.rowKey] === selectedRow.value[props.config.rowKey]
+  if (isSingleSelection.value && masterStore.selectedRow) {
+    return row[props.config.rowKey] === masterStore.selectedRow[props.config.rowKey]
       ? 'selected-row'
       : ''
   }
@@ -91,7 +75,7 @@ const tableRowClassName = ({ row }: { row: any }) => {
     <div class="flex-1 overflow-auto">
       <el-table
         ref="tableRef"
-        :data="data"
+        :data="masterStore.sortedData"
         :row-key="config.rowKey"
         :row-class-name="tableRowClassName"
         :height="'100%'"
@@ -100,7 +84,7 @@ const tableRowClassName = ({ row }: { row: any }) => {
         @row-click="handleRowClick"
         @selection-change="handleSelectionChange"
         @sort-change="handleSortChange"
-        v-loading="loading"
+        v-loading="masterStore.isLoading"
       >
         <!-- Selection Column (Multiple) -->
         <el-table-column
@@ -142,7 +126,7 @@ const tableRowClassName = ({ row }: { row: any }) => {
         :current-page="1"
         :page-size="config.pagination.pageSize"
         :page-sizes="config.pagination.pageSizes"
-        :total="data.length"
+        :total="masterStore.sortedData.length"
         layout="total, sizes, prev, pager, next, jumper"
         class="justify-end"
       />

@@ -131,6 +131,8 @@ export interface Column {
   sortable?: boolean
   /** 컬럼 너비 @example 100 또는 '150px' */
   width?: number | string
+  /** 컬럼 최소 너비 @example 100 */
+  minWidth?: number | string
   /** 정렬 방향 @default 'left' */
   align?: 'left' | 'center' | 'right'
   /** 값 포맷팅 함수 @example (val) => new Date(val).toLocaleDateString() */

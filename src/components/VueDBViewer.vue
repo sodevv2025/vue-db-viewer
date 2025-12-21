@@ -1,54 +1,31 @@
 <script setup lang="ts">
-import { ref, computed, provide } from 'vue'
+import { computed, provide } from 'vue'
+import { useMasterStore } from '../stores/useMasterStore'
 import VDBSplitPane from './layout/VDBSplitPane.vue'
 import VDBMasterTable from './table/VDBMasterTable.vue'
-import type { VueDBViewerConfig, SelectedRow } from '../types'
+import type { VueDBViewerConfig } from '../types'
 
 /**
  * VueDBViewer - 마스터-디테일 패턴의 데이터베이스 뷰어 컴포넌트
  *
+ * Pinia store를 사용하여 상태를 중앙 관리합니다.
+ *
  * @example
- * <VueDBViewer
- *   :config="config"
- *   v-model:selected-row="selectedRow"
- *   @row-select="handleRowSelect"
- * />
+ * <VueDBViewer :config="config" />
  */
 
 // Props
 interface Props {
   /** 뷰어 설정 */
   config: VueDBViewerConfig
-  /** 선택된 행 (v-model) */
-  selectedRow?: SelectedRow
-  /** 마스터 테이블 데이터 */
-  data?: any[]
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  data: () => [],
-})
+const props = defineProps<Props>()
 
-// Emits
-const emit = defineEmits<{
-  /** 선택된 행 변경 이벤트 */
-  'update:selectedRow': [row: SelectedRow]
-  /** 행 선택 이벤트 */
-  'row-select': [payload: { row: any; index: number }]
-  /** 필터 변경 이벤트 */
-  'filter-change': [payload: { filters: Record<string, any> }]
-  /** 정렬 변경 이벤트 */
-  'sort-change': [payload: { column: string; direction: 'asc' | 'desc' | null }]
-  /** 페이지 변경 이벤트 */
-  'page-change': [payload: { page: number; pageSize: number }]
-}>()
-
-// State
-const internalSelectedRow = ref<SelectedRow>(props.selectedRow || null)
-const isLoading = ref(false)
+// Store
+const masterStore = useMasterStore()
 
 // Computed
-const masterData = computed(() => props.data || [])
 
 const layoutConfig = computed(() => ({
   splitRatio: props.config.layout?.splitRatio ?? 0.5,
@@ -60,16 +37,9 @@ const layoutConfig = computed(() => ({
 const hasLeftPanel = computed(() => !!props.config.leftPanel)
 const hasDetailPanel = computed(() => !!props.config.detail)
 
-// Methods
-const handleRowSelect = (payload: { row: any; index: number }) => {
-  internalSelectedRow.value = payload.row
-  emit('update:selectedRow', payload.row)
-  emit('row-select', payload)
-}
-
-// Provide config to child components
+// Provide config and store to child components
 provide('vdb-config', props.config)
-provide('vdb-selected-row', internalSelectedRow)
+provide('vdb-selected-row', masterStore.selectedRow)
 </script>
 
 <template>
@@ -100,12 +70,7 @@ provide('vdb-selected-row', internalSelectedRow)
           v-if="!hasDetailPanel"
           class="vdb-master h-full"
         >
-          <VDBMasterTable
-            :config="config.master"
-            :data="masterData"
-            :loading="isLoading"
-            @row-select="handleRowSelect"
-          />
+          <VDBMasterTable :config="config.master" />
         </section>
 
         <!-- Master + Detail with SplitPane -->
@@ -119,12 +84,7 @@ provide('vdb-selected-row', internalSelectedRow)
           <!-- Master Table -->
           <template #left>
             <section class="vdb-master h-full">
-              <VDBMasterTable
-                :config="config.master"
-                :data="masterData"
-                :loading="isLoading"
-                @row-select="handleRowSelect"
-              />
+              <VDBMasterTable :config="config.master" />
             </section>
           </template>
 
@@ -133,7 +93,7 @@ provide('vdb-selected-row', internalSelectedRow)
             <section class="vdb-detail bg-white h-full">
               <div class="p-4">
                 <div class="text-xl font-bold mb-4">디테일 패널</div>
-                <div v-if="!internalSelectedRow" class="text-center py-12 text-gray-400">
+                <div v-if="!masterStore.selectedRow" class="text-center py-12 text-gray-400">
                   <div class="text-lg mb-2">행을 선택하세요</div>
                   <div class="text-sm">마스터 테이블에서 행을 클릭하면 상세 정보가 표시됩니다</div>
                 </div>
