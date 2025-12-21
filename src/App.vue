@@ -10,7 +10,7 @@ const selectedRow = ref<SelectedRow>(null)
 const config: VueDBViewerConfig = {
   // 레이아웃 설정
   layout: {
-    splitRatio: 0.6,
+    splitRatio: 0.5,
     resizable: true,
   },
 

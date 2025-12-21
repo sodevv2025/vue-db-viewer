@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, provide } from 'vue'
+import VDBSplitPane from './layout/VDBSplitPane.vue'
 import type { VueDBViewerConfig, SelectedRow } from '../types'
 
 /**
@@ -84,12 +85,12 @@ provide('vdb-selected-row', internalSelectedRow)
         </div>
       </aside>
 
-      <!-- Main Content (Master + Detail) -->
-      <div class="vdb-content flex-1 flex overflow-hidden">
-        <!-- Master Table Section -->
+      <!-- Main Content (Master + Detail) with SplitPane -->
+      <div class="vdb-content flex-1 overflow-hidden">
+        <!-- Master only (no detail panel) -->
         <section
-          class="vdb-master bg-white border-r border-gray-200 overflow-auto"
-          :style="{ width: hasDetailPanel ? `${layoutConfig.splitRatio * 100}%` : '100%' }"
+          v-if="!hasDetailPanel"
+          class="vdb-master bg-white h-full overflow-auto"
         >
           <div class="p-4">
             <div class="text-xl font-bold mb-4">마스터 테이블</div>
@@ -102,29 +103,45 @@ provide('vdb-selected-row', internalSelectedRow)
           </div>
         </section>
 
-        <!-- Resizer (드래그 가능한 구분선) -->
-        <div
-          v-if="hasDetailPanel && layoutConfig.resizable"
-          class="vdb-resizer w-1 bg-gray-300 hover:bg-blue-500 cursor-col-resize transition-colors"
-        />
-
-        <!-- Detail Panel Section -->
-        <section
-          v-if="hasDetailPanel"
-          class="vdb-detail bg-white overflow-auto"
-          :style="{ width: `${(1 - layoutConfig.splitRatio) * 100}%` }"
+        <!-- Master + Detail with SplitPane -->
+        <VDBSplitPane
+          v-else
+          :initial-ratio="layoutConfig.splitRatio"
+          :min-left-width="layoutConfig.minMasterWidth"
+          :min-right-width="layoutConfig.minDetailWidth"
+          :resizable="layoutConfig.resizable"
         >
-          <div class="p-4">
-            <div class="text-xl font-bold mb-4">디테일 패널</div>
-            <div v-if="!internalSelectedRow" class="text-center py-12 text-gray-400">
-              <div class="text-lg mb-2">행을 선택하세요</div>
-              <div class="text-sm">마스터 테이블에서 행을 클릭하면 상세 정보가 표시됩니다</div>
-            </div>
-            <div v-else class="text-sm text-gray-600">
-              선택된 행 정보가 여기에 표시됩니다
-            </div>
-          </div>
-        </section>
+          <!-- Master Table -->
+          <template #left>
+            <section class="vdb-master bg-white h-full">
+              <div class="p-4">
+                <div class="text-xl font-bold mb-4">마스터 테이블</div>
+                <div class="text-sm text-gray-500 mb-4">
+                  데이터소스: {{ typeof config.master.dataSource === 'string' ? config.master.dataSource : '배열' }}
+                </div>
+                <div class="text-sm text-gray-500">
+                  컬럼 수: {{ config.master.columns.length }}
+                </div>
+              </div>
+            </section>
+          </template>
+
+          <!-- Detail Panel -->
+          <template #right>
+            <section class="vdb-detail bg-white h-full">
+              <div class="p-4">
+                <div class="text-xl font-bold mb-4">디테일 패널</div>
+                <div v-if="!internalSelectedRow" class="text-center py-12 text-gray-400">
+                  <div class="text-lg mb-2">행을 선택하세요</div>
+                  <div class="text-sm">마스터 테이블에서 행을 클릭하면 상세 정보가 표시됩니다</div>
+                </div>
+                <div v-else class="text-sm text-gray-600">
+                  선택된 행 정보가 여기에 표시됩니다
+                </div>
+              </div>
+            </section>
+          </template>
+        </VDBSplitPane>
       </div>
     </main>
 
