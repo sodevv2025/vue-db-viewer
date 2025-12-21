@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, provide } from 'vue'
 import VDBSplitPane from './layout/VDBSplitPane.vue'
+import VDBMasterTable from './table/VDBMasterTable.vue'
 import type { VueDBViewerConfig, SelectedRow } from '../types'
 
 /**
@@ -20,9 +21,13 @@ interface Props {
   config: VueDBViewerConfig
   /** 선택된 행 (v-model) */
   selectedRow?: SelectedRow
+  /** 마스터 테이블 데이터 */
+  data?: any[]
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  data: () => [],
+})
 
 // Emits
 const emit = defineEmits<{
@@ -40,8 +45,11 @@ const emit = defineEmits<{
 
 // State
 const internalSelectedRow = ref<SelectedRow>(props.selectedRow || null)
+const isLoading = ref(false)
 
 // Computed
+const masterData = computed(() => props.data || [])
+
 const layoutConfig = computed(() => ({
   splitRatio: props.config.layout?.splitRatio ?? 0.5,
   minMasterWidth: props.config.layout?.minMasterWidth ?? 400,
@@ -53,10 +61,10 @@ const hasLeftPanel = computed(() => !!props.config.leftPanel)
 const hasDetailPanel = computed(() => !!props.config.detail)
 
 // Methods
-const handleRowSelect = (row: any, index: number) => {
-  internalSelectedRow.value = row
-  emit('update:selectedRow', row)
-  emit('row-select', { row, index })
+const handleRowSelect = (payload: { row: any; index: number }) => {
+  internalSelectedRow.value = payload.row
+  emit('update:selectedRow', payload.row)
+  emit('row-select', payload)
 }
 
 // Provide config to child components
@@ -90,17 +98,14 @@ provide('vdb-selected-row', internalSelectedRow)
         <!-- Master only (no detail panel) -->
         <section
           v-if="!hasDetailPanel"
-          class="vdb-master bg-white h-full overflow-auto"
+          class="vdb-master h-full"
         >
-          <div class="p-4">
-            <div class="text-xl font-bold mb-4">마스터 테이블</div>
-            <div class="text-sm text-gray-500 mb-4">
-              데이터소스: {{ typeof config.master.dataSource === 'string' ? config.master.dataSource : '배열' }}
-            </div>
-            <div class="text-sm text-gray-500">
-              컬럼 수: {{ config.master.columns.length }}
-            </div>
-          </div>
+          <VDBMasterTable
+            :config="config.master"
+            :data="masterData"
+            :loading="isLoading"
+            @row-select="handleRowSelect"
+          />
         </section>
 
         <!-- Master + Detail with SplitPane -->
@@ -113,16 +118,13 @@ provide('vdb-selected-row', internalSelectedRow)
         >
           <!-- Master Table -->
           <template #left>
-            <section class="vdb-master bg-white h-full">
-              <div class="p-4">
-                <div class="text-xl font-bold mb-4">마스터 테이블</div>
-                <div class="text-sm text-gray-500 mb-4">
-                  데이터소스: {{ typeof config.master.dataSource === 'string' ? config.master.dataSource : '배열' }}
-                </div>
-                <div class="text-sm text-gray-500">
-                  컬럼 수: {{ config.master.columns.length }}
-                </div>
-              </div>
+            <section class="vdb-master h-full">
+              <VDBMasterTable
+                :config="config.master"
+                :data="masterData"
+                :loading="isLoading"
+                @row-select="handleRowSelect"
+              />
             </section>
           </template>
 

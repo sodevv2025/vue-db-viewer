@@ -6,6 +6,18 @@ import type { VueDBViewerConfig, SelectedRow } from './types'
 // 선택된 행
 const selectedRow = ref<SelectedRow>(null)
 
+// 샘플 데이터
+const sampleData = [
+  { id: 1, name: '홍길동', email: 'hong@example.com', status: '활성' },
+  { id: 2, name: '김철수', email: 'kim@example.com', status: '활성' },
+  { id: 3, name: '이영희', email: 'lee@example.com', status: '비활성' },
+  { id: 4, name: '박민수', email: 'park@example.com', status: '활성' },
+  { id: 5, name: '최지우', email: 'choi@example.com', status: '활성' },
+  { id: 6, name: '정수진', email: 'jung@example.com', status: '비활성' },
+  { id: 7, name: '강동원', email: 'kang@example.com', status: '활성' },
+  { id: 8, name: '송중기', email: 'song@example.com', status: '활성' },
+]
+
 // 뷰어 설정
 const config: VueDBViewerConfig = {
   // 레이아웃 설정
@@ -72,6 +84,7 @@ const handleRowSelect = (payload: { row: any; index: number }) => {
 <template>
   <VueDBViewer
     :config="config"
+    :data="sampleData"
     v-model:selected-row="selectedRow"
     @row-select="handleRowSelect"
   >
