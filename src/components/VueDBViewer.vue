@@ -32,6 +32,8 @@ import VDBSplitPane from './layout/VDBSplitPane.vue'
 // - 정렬, 페이징, 행 선택 등의 기능 제공
 import VDBMasterTable from './table/VDBMasterTable.vue'
 
+import VDBDetailPanel from './detail/VDBDetailPanel.vue'
+
 // VueDBViewerConfig: 뷰어 설정의 타입 정의
 // - TypeScript로 설정 객체의 구조를 정의
 // - IDE에서 자동완성과 타입 체크 제공
@@ -200,20 +202,7 @@ provide('vdb-selected-row', masterStore.selectedRow)
           -->
           <template #right>
             <section class="vdb-detail bg-white h-full">
-              <div class="p-4">
-                <div class="text-xl font-bold mb-4">디테일 패널</div>
-
-                <!-- 선택된 행이 없을 때 -->
-                <div v-if="!masterStore.selectedRow" class="text-center py-12 text-gray-400">
-                  <div class="text-lg mb-2">행을 선택하세요</div>
-                  <div class="text-sm">마스터 테이블에서 행을 클릭하면 상세 정보가 표시됩니다</div>
-                </div>
-
-                <!-- 선택된 행이 있을 때 (향후 탭과 폼으로 구현 예정) -->
-                <div v-else class="text-sm text-gray-600">
-                  선택된 행 정보가 여기에 표시됩니다
-                </div>
-              </div>
+                <VDBDetailPanel />
             </section>
           </template>
         </VDBSplitPane>
